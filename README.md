@@ -26,7 +26,7 @@ Iniciamos la modificación en Eclipse para el Deploy.
 1. En el archivo `build.gradle` eliminar la dependencia de MySQL y agregar la dependencia de PostgreSQL:
 ```java
 //https://mvnrepository.com/artifact/org.postgresql/postgresql
-implementation 'org.postgresql:postgresql'
+runtimeOnly 'org.postgresql:postgresql'
 ```
 
 2. Crear un archivo llamado `Dockerfile`, click derecho sobre la carpeta del Project -> New -> File. Dentro del archivo `Dockerfile` agregamos lo siguiente:
