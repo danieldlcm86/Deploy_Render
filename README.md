@@ -81,5 +81,6 @@ Para saber si el deploy finalizó con éxito, hay que localizar el mensaje `Your
 ```sh
 spring.jpa.hibernate.ddl-auto=validate
 ```
-12. Realizar commit y push al repositorio y esperar que termine el deploy. 
+12. Realizar commit y push al repositorio y esperar que termine el deploy.
+
 **En el enlace principal de render `.onder` podemos acceder al fronted.**
