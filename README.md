@@ -37,13 +37,13 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 EXPOSE 8080
 ```
 
-3. Modificar el achivo `applications.properties` que se encuentra en la carpeta src/main/resources y por seguridad, colocar las variables de entorno de cada dato. 
+3. Modificar el achivo `applications.properties` que se encuentra en la carpeta `src/main/resources` y por seguridad, colocar las variables de entorno de cada dato. 
 ```sh
 spring.datasource.url=jdbc:postgresql://${PROD_DB_HOSTNAME}:${PROD_DB_PORT}/${PROD_DB_NAME}
 spring.datasource.username=${PROD_DB_USERNAME}
 spring.datasource.password=${PROD_DB_PASSWORD}
 
-#Agregamos la dependencia aunque no es necesaria
+#Agregamos la configuración de `hibernate.dialect` aunque no es necesaria
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=create
 
