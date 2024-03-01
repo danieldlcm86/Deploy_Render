@@ -1,5 +1,25 @@
 # Render Deploy - SPRING API
 
+<!--toc:start-->
+
+- [Render Deploy - SPRING API](#render-deploy-spring-api)
+
+  - [Github Repo](#github-repo)
+  - [Render](#render)
+  - [Eclipse](#eclipse)
+    - [Dependencias](#dependencias)
+    - [Dockerfile](#dockerfile)
+    - [Variables](#variables)
+      - [Opcion 1](#opcion-1)
+      - [Opcion 2](#opcion-2)
+    - [Gradle](#gradle)
+    - [gitignore](#gitignore)
+  - [Servicio Java](#servicio-java)
+    - [Pruebas](#pruebas)
+  - [Ajustes finales](#ajustes-finales) - [Front adicional](#front-adicional)
+
+  <!--toc:end-->
+
 ## Github Repo
 
 Es necesario crear un nuevo repositorio en GitHub donde vamos a subir todo el proycto de Eclipse.
@@ -78,50 +98,81 @@ logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type=TRACE
 ```
 
-_Recuerda refrescar el proyecto de Gradle después de haber creado y modificado los archivos._
-
-4. En las tareas de Gradle (`Gradle Tasks`) seleccionar `build` y doble click en el archivo `build`. Una vez que haya terminado la ejecución, validar en la carpeta del proyecto que los archivos `.jar` fueron creados.
-
-   - Estos archivos `.jar` son los que podremos subir para no exponer las contraseñas.
-
-5. En la carpeta del proyecto ubicar el archivo `.gitignore`, comentar el directorio ``build` y `src/main/**/build/` y guardar
-
 #### Opcion 2
+
+- Crear un nuevo archivo `application-prod.properties`
+  - Este servirá exclusivamente para configuración de producción.
+  - No es necesario modificar `application.properties`.
+- Pega las mismas lineas de configuracion que la [Opcion 1](#opcion-1)
+
+> Recuerda refrescar el proyecto de Gradle después creación y modificación.
+
+### Gradle
+
+- En las tareas de Gradle (`Gradle Tasks`) seleccionar `build`.
+
+  - Accede a la carpeta `build` en root del proyecto.
+  - Una vez que haya terminado la ejecución
+    - validar en la carpeta del proyecto que los archivos `.jar` fueron creados.
+  - Estos archivos `.jar` son los que podremos subir para no exponer las contraseñas.
+
+- En la carpeta del proyecto ubicar el archivo `.gitignore`.
+  - Comentar el directorio `build` y `src/main/**/build/`.
+  - Guarda cambios.
 
 ### gitignore
 
-```sh
-#build
-#!**/src/main/**/build/
+```properties
+# build
+# !**/src/main/**/build/
 ```
 
-6. Subir el proyecto al repositorio que creamos.
+- Subir el proyecto al repositorio que creamos.
 
-## Render servicio
+## Servicio Java
 
-1. Presionar el botón `New -> WebService`.
-2. Conectar con el repositorio que se acaba de crear en Github.
-3. Escribir un nombre para la aplicación.
-4. Seleccionar el `Tipo de instancia` como `Free`.
-5. Ubicar la sección de `Variables de entorno`, en donde copiaremos las variables de entorno que definimos en el paso 3 de Eclipse, sin incluir los caracteres `$` y `{}`.
-   Para ello, presionamos el botón `Add Enviroment Variable` y llenamos con los valores que copiamos en nuestro bloc de notas.
-6. Presionar el botón `Create Web Service`
-7. Inicia el deploy y esperar a que la aplicación termine de publicarse.
-   Para saber si el deploy finalizó con éxito, hay que localizar el mensaje `Your service is live 🎉` en la consola del Dashboard.
-8. Inmediamente, comenzar a crear productos utilizando postman, ya que la versión gratuita de Render solo otorga un tiempo limitado de vida del deploy y después entra en suspensión, siendo imposible reactivarlo (a menos que contrates un plan).
+- Presionar el botón `New -> WebService`.
+- Conectar con el repositorio que se acaba de crear en Github.
+  - Escribir un nombre para la aplicación.
+- Seleccionar el `Tipo de instancia` como `Free`.
+- Ubicar la sección de `Variables de entorno`, en donde copiaremos las variables de entorno que definimos en el paso 3 de Eclipse, sin incluir los caracteres `$` y `{}`.
+  - Si se creó un `application-prod.properties`:
+  - Agregar una variable de entorno:
+  - `SPRING_PROFILES_ACTIVE` con valor: `prod`
+- Para ello, presionamos el botón `Add Enviroment Variable`
+  - Llenamos con los valores en nuestro bloc de notas.
+- Presionar el botón `Create Web Service`
+- Inicia el deploy y espera a que la aplicación termine de publicarse.
 
-- Copiamos la URL que se encuentra en la parte superior del dashboard, la cual tiene dominio `.onrender` y complementamos con el path configurado en spring boot para 'postear' registros desde Postman.
+### Pruebas
 
-9. Modificar la url del fetch en el frontend con la nueva url que nos proporciona Render.
-10. En la carpeta `static` que se encuentra en el directorio `src/main/resources` del proyecto de Spring boot, copiamos el frontend del proyecto.
-    _No olvides refrescar el proyecto_
-11. En `application.properties` cambiar `create` por `validate` y repetir el paso 4 de Eclipse en el `build`.
+Para saber si el deploy finalizó con éxito, hay que localizar el mensaje `Your service is live 🎉` en la consola del Dashboard.
 
-```sh
+Inmediamente, comenzar a crear datos de las entidades por medio de postman.
+
+> La versión gratuita de Render solo otorga un tiempo limitado de vida del deploy
+> y después entra en suspensión, siendo imposible reactivarlo (a menos que contrates un plan).
+
+- Copiamos la URL que se encuentra en la parte superior del dashboard.
+- La cual tiene dominio `.onrender`
+  - Complementamos con el `endpoint` configurado en spring boot para 'postear' registros.
+
+## Ajustes finales
+
+### Front adicional
+
+1. Modificar la url del fetch en el frontend con la nueva url que nos proporciona Render.
+2. Dentro de `/static` que se encuentra en el directorio `src/main/resources` del proyecto:
+   2.1 Copiamos el frontend del proyecto.
+   > _No olvides refrescar el proyecto_
+3. En `application.properties` cambiar `create` por `validate`
+   3.1 y repetir el paso 4 de Eclipse en el `build`:
+
+```properties
 spring.jpa.hibernate.ddl-auto=validate
 ```
 
-12. Realizar commit y push al repositorio y esperar que termine el deploy.
-
-**En el enlace principal de render `.onder` podemos acceder al fronted.**
+- Realizar commit y push
+- Esperar que termine el deploy.
+- **En el enlace principal de `.onrder` podemos acceder al fronted.**
 
