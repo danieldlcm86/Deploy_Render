@@ -12,38 +12,44 @@ Pero antes de subirlo hay que modificar algunas cositas en nuestro proyecto Grad
 - Presionar el botón New -> Service -> PostgeSQL
 - Configurar los parámetros de la base de datos y presionar el botón `Create Database`:
 
-```json
-{
-  "name": "ProjectName",
-  "user": "root"
-}
+```properties
+"name": "ProjectName",
+"user": "root"
 ```
 
-5. Presionar el botón `Create Database` y esperar que termine la configuración de la base de datos.
-6. En un bloc de notas, guardar la información de la base de datos de Render ubicada en Base de datos -> Info -> Connections. Esta información incluye el `hostname, port, name_database, username y password`
-7. La información que obtendremos de Render se guardará dentro de variables específicas de la siguiente manera:
+- Presionar el botón `Create Database` y esperar que termine la configuración.
+- En un bloc de notas, guardar la información de la base de datos de Render
+  - Ubicada en `Database` -> `Info`-> `Connections`.
+  - Esta información incluye: `hostname, port, name_database, username` y `password`.
+- La información obtenida se guardará dentro de variables de entorno de la siguiente manera:
 
-```sh
-${PROD_DB_HOSTNAME} Hostname
-${PROD_DB_PORT} Port
-${PROD_DB_NAME} Database
-${PROD_DB_USERNAME} Username
-${PROD_DB_PASSWORD} Password
+```properties
+${PROD_DB_HOSTNAME}=Hostname
+${PROD_DB_PORT}=Port
+${PROD_DB_NAME}=Database
+${PROD_DB_USERNAME}=Username
+${PROD_DB_PASSWORD}=Password
 ```
 
 ## Eclipse
 
-Iniciamos la modificación en Eclipse para el Deploy.
+### Dependencias
 
-1. En el archivo `build.gradle` eliminar la dependencia de MySQL y agregar la dependencia de PostgreSQL:
+- En el archivo `build.gradle` eliminar la dependencia de MySQL
+- Agregar la dependencia de PostgreSQL:
 
-```java
+```*.properties
 implementation 'org.postgresql:postgresql:42.7.1'
 ```
 
-2. Crear un archivo llamado `Dockerfile`, click derecho sobre la carpeta del Project -> New -> File. Dentro del archivo `Dockerfile` agregamos lo siguiente:
+### Dockerfile
 
-```sh
+- Crear un archivo llamado `Dockerfile`
+  - click derecho sobre la carpeta del proyecto:
+    - Project -> New -> File.
+      -Dentro del archivo `Dockerfile` agregamos lo siguiente:
+
+```docker
 FROM azul/zulu-openjdk:17-latest
 VOLUME /tmp
 COPY build/libs/*.jar app.jar
@@ -51,9 +57,15 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 EXPOSE 8080
 ```
 
-3. Modificar el achivo `applications.properties` que se encuentra en la carpeta `src/main/resources` y por seguridad, colocar las variables de entorno de cada dato.
+### Variables
 
-```sh
+#### Opcion 1
+
+- Modificar el achivo `applications.properties`:
+  - Se encuentra en la carpeta `src/main/resources`
+  - Por seguridad, colocar las variables de entorno de la base de dato
+
+```properties
 spring.datasource.url=jdbc:postgresql://${PROD_DB_HOSTNAME}:${PROD_DB_PORT}/${PROD_DB_NAME}
 spring.datasource.username=${PROD_DB_USERNAME}
 spring.datasource.password=${PROD_DB_PASSWORD}
@@ -73,6 +85,10 @@ _Recuerda refrescar el proyecto de Gradle después de haber creado y modificado 
    - Estos archivos `.jar` son los que podremos subir para no exponer las contraseñas.
 
 5. En la carpeta del proyecto ubicar el archivo `.gitignore`, comentar el directorio ``build` y `src/main/**/build/` y guardar
+
+#### Opcion 2
+
+### gitignore
 
 ```sh
 #build
