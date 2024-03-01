@@ -1,35 +1,75 @@
-### Repositorio GitHub
-Es necesario crear un nuevo repositorio en GitHub donde vamos a subir todo nuestro archivo de Eclipse, pero antes de subirlo al repo hay que modificar algunas cositas en nuestro proyecto Gradle.
+# Render Deploy - SPRING API
 
-### Render
-1. Entrar al sitio oficial de Render [https://dashboard.render.com]
-2. Login con Github
-3. Presionar el botón New -> PostgeSQL
-4. Configurar los parámetros de la base de datos y presionar el botón `Create Database`:
-```sh
-Name: nombreProyecto
-User: root
-```
-5. Presionar el botón `Create Database` y esperar que termine la configuración de la base de datos.
-6. En un bloc de notas, guardar la información de la base de datos de Render ubicada en Base de datos -> Info -> Connections. Esta información incluye el `hostname, port, name_database, username y password`
-7. La información que obtendremos de Render se guardará dentro de variables específicas de la siguiente manera:
-```sh
-${PROD_DB_HOSTNAME} Hostname
-${PROD_DB_PORT} Port
-${PROD_DB_NAME} Database
-${PROD_DB_USERNAME} Username
-${PROD_DB_PASSWORD} Password
+<!--toc:start-->
+
+- [Render Deploy - SPRING API](#render-deploy-spring-api)
+
+  - [Github Repo](#github-repo)
+  - [Render](#render)
+  - [Eclipse](#eclipse)
+    - [Dependencias](#dependencias)
+    - [Dockerfile](#dockerfile)
+    - [Variables](#variables)
+      - [Opcion 1](#opcion-1)
+      - [Opcion 2](#opcion-2)
+    - [Gradle](#gradle)
+    - [gitignore](#gitignore)
+  - [Servicio Java](#servicio-java)
+    - [Pruebas](#pruebas)
+  - [Ajustes finales](#ajustes-finales) - [Front adicional](#front-adicional)
+
+  <!--toc:end-->
+
+## Github Repo
+
+Es necesario crear un nuevo repositorio en GitHub donde vamos a subir todo el proycto de Eclipse.
+Pero antes de subirlo hay que modificar algunas cositas en nuestro proyecto Gradle.
+
+## Render
+
+- Entrar al sitio oficial de Render [https://dashboard.render.com]
+  - Login con Github
+- Presionar el botón New -> Service -> PostgeSQL
+- Configurar los parámetros de la base de datos y presionar el botón `Create Database`:
+
+```properties
+"name": "ProjectName",
+"user": "root"
 ```
 
-### Eclipse
-Iniciamos la modificación en Eclipse para el Deploy. 
-1. En el archivo `build.gradle` eliminar la dependencia de MySQL y agregar la dependencia de PostgreSQL:
-```java
+- Presionar el botón `Create Database` y esperar que termine la configuración.
+- En un bloc de notas, guardar la información de la base de datos de Render
+  - Ubicada en `Database` -> `Info`-> `Connections`.
+  - Esta información incluye: `hostname, port, name_database, username` y `password`.
+- La información obtenida se guardará dentro de variables de entorno de la siguiente manera:
+
+```properties
+${PROD_DB_HOSTNAME}=Hostname
+${PROD_DB_PORT}=Port
+${PROD_DB_NAME}=Database
+${PROD_DB_USERNAME}=Username
+${PROD_DB_PASSWORD}=Password
+```
+
+## Eclipse
+
+### Dependencias
+
+- En el archivo `build.gradle` eliminar la dependencia de MySQL
+- Agregar la dependencia de PostgreSQL:
+
+```*.properties
 implementation 'org.postgresql:postgresql:42.7.1'
 ```
 
-2. Crear un archivo llamado `Dockerfile`, click derecho sobre la carpeta del Project -> New -> File. Dentro del archivo `Dockerfile` agregamos lo siguiente:
-```sh
+### Dockerfile
+
+- Crear un archivo llamado `Dockerfile`
+  - click derecho sobre la carpeta del proyecto:
+    - Project -> New -> File.
+      -Dentro del archivo `Dockerfile` agregamos lo siguiente:
+
+```docker
 FROM azul/zulu-openjdk:17-latest
 VOLUME /tmp
 COPY build/libs/*.jar app.jar
@@ -37,8 +77,15 @@ ENTRYPOINT ["java","-jar","/app.jar"]
 EXPOSE 8080
 ```
 
-3. Modificar el achivo `applications.properties` que se encuentra en la carpeta `src/main/resources` y por seguridad, colocar las variables de entorno de cada dato. 
-```sh
+### Variables
+
+#### Opcion 1
+
+- Modificar el achivo `applications.properties`:
+  - Se encuentra en la carpeta `src/main/resources`
+  - Por seguridad, colocar las variables de entorno de la base de dato
+
+```properties
 spring.datasource.url=jdbc:postgresql://${PROD_DB_HOSTNAME}:${PROD_DB_PORT}/${PROD_DB_NAME}
 spring.datasource.username=${PROD_DB_USERNAME}
 spring.datasource.password=${PROD_DB_PASSWORD}
@@ -50,37 +97,82 @@ spring.jpa.hibernate.ddl-auto=create
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.type=TRACE
 ```
-*Recuerda refrescar el proyecto de Gradle después de haber creado y modificado los archivos.*
 
-4. En las tareas de Gradle (`Gradle Tasks`) seleccionar `build` y doble click en el archivo `build`. Una vez que haya terminado la ejecución, validar en la carpeta del proyecto que los archivos `.jar` fueron creados.
-    - Estos archivos `.jar` son los que podremos subir para no exponer las contraseñas.
+#### Opcion 2
 
-5. En la carpeta del proyecto ubicar el archivo `.gitignore`, comentar el directorio ``build` y `src/main/**/build/` y guardar
-```sh
-#build
-#!**/src/main/**/build/
+- Crear un nuevo archivo `application-prod.properties`
+  - Este servirá exclusivamente para configuración de producción.
+  - No es necesario modificar `application.properties`.
+- Pega las mismas lineas de configuracion que la [Opcion 1](#opcion-1)
+
+> Recuerda refrescar el proyecto de Gradle después creación y modificación.
+
+### Gradle
+
+- En las tareas de Gradle (`Gradle Tasks`) seleccionar `build`.
+
+  - Accede a la carpeta `build` en root del proyecto.
+  - Una vez que haya terminado la ejecución
+    - validar en la carpeta del proyecto que los archivos `.jar` fueron creados.
+  - Estos archivos `.jar` son los que podremos subir para no exponer las contraseñas.
+
+- En la carpeta del proyecto ubicar el archivo `.gitignore`.
+  - Comentar el directorio `build` y `src/main/**/build/`.
+  - Guarda cambios.
+
+### gitignore
+
+```properties
+# build
+# !**/src/main/**/build/
 ```
-6. Subir el proyecto al repositorio que creamos.
 
-### Render
-1. Presionar el botón `New -> WebService`.
-2. Conectar con el repositorio que se acaba de crear en Github.
-3. Escribir un nombre para la aplicación.
-4. Seleccionar el `Tipo de instancia` como `Free`.
-5. Ubicar la sección de `Variables de entorno`, en donde copiaremos las variables de entorno que definimos en el paso 3 de Eclipse, sin incluir los caracteres `$` y `{}`. 
-Para ello, presionamos el botón `Add Enviroment Variable` y llenamos con los valores que copiamos en nuestro bloc de notas. 
-6. Presionar el botón `Create Web Service`
-7. Inicia el deploy y esperar a que la aplicación termine de publicarse.
+- Subir el proyecto al repositorio que creamos.
+
+## Servicio Java
+
+- Presionar el botón `New -> WebService`.
+- Conectar con el repositorio que se acaba de crear en Github.
+  - Escribir un nombre para la aplicación.
+- Seleccionar el `Tipo de instancia` como `Free`.
+- Ubicar la sección de `Variables de entorno`, en donde copiaremos las variables de entorno que definimos en el paso 3 de Eclipse, sin incluir los caracteres `$` y `{}`.
+  - Si se creó un `application-prod.properties`:
+  - Agregar una variable de entorno:
+  - `SPRING_PROFILES_ACTIVE` con valor: `prod`
+- Para ello, presionamos el botón `Add Enviroment Variable`
+  - Llenamos con los valores en nuestro bloc de notas.
+- Presionar el botón `Create Web Service`
+- Inicia el deploy y espera a que la aplicación termine de publicarse.
+
+### Pruebas
+
 Para saber si el deploy finalizó con éxito, hay que localizar el mensaje `Your service is live 🎉` en la consola del Dashboard.
-8. Inmediamente, comenzar a crear productos utilizando postman, ya que la versión gratuita de Render solo otorga un tiempo limitado de vida del deploy y después entra en suspensión, siendo imposible reactivarlo (a menos que contrates un plan).
-- Copiamos la URL que se encuentra en la parte superior del dashboard, la cual tiene dominio `.onrender` y complementamos con el path configurado en spring boot para 'postear' registros desde Postman.
-9. Modificar la url del fetch en el frontend con la nueva url que nos proporciona Render.
-10. En la carpeta `static` que se encuentra en el directorio `src/main/resources` del proyecto de Spring boot, copiamos el frontend del proyecto.
-*No olvides refrescar el proyecto*
-11. En `application.properties` cambiar `create` por `validate` y repetir el paso 4 de Eclipse en el `build`.
-```sh
+
+Inmediamente, comenzar a crear datos de las entidades por medio de postman.
+
+> La versión gratuita de Render solo otorga un tiempo limitado de vida del deploy
+> y después entra en suspensión, siendo imposible reactivarlo (a menos que contrates un plan).
+
+- Copiamos la URL que se encuentra en la parte superior del dashboard.
+- La cual tiene dominio `.onrender`
+  - Complementamos con el `endpoint` configurado en spring boot para 'postear' registros.
+
+## Ajustes finales
+
+### Front adicional
+
+1. Modificar la url del fetch en el frontend con la nueva url que nos proporciona Render.
+2. Dentro de `/static` que se encuentra en el directorio `src/main/resources` del proyecto:
+   2.1 Copiamos el frontend del proyecto.
+   > _No olvides refrescar el proyecto_
+3. En `application.properties` cambiar `create` por `validate`
+   3.1 y repetir el paso 4 de Eclipse en el `build`:
+
+```properties
 spring.jpa.hibernate.ddl-auto=validate
 ```
-12. Realizar commit y push al repositorio y esperar que termine el deploy.
 
-**En el enlace principal de render `.onder` podemos acceder al fronted.**
+- Realizar commit y push
+- Esperar que termine el deploy.
+- **En el enlace principal de `.onrder` podemos acceder al fronted.**
+
