@@ -105,6 +105,35 @@ logging.level.org.hibernate.type=TRACE
   - No es necesario modificar `application.properties`.
 - Pega las mismas lineas de configuracion que la [Opcion 1](#opcion-1)
 
+#### Opcion 3
+
+- Modificar el achivo `applications.yml`:
+  - Se encuentra en la carpeta `src/main/resources`
+  - Por seguridad, colocar las variables de entorno de la base de dato
+
+```yaml
+server:
+ port: 8080
+ 
+spring:
+ application:
+  name: projectName
+
+ datasource:
+  url: jdbc:postgresql://${PROD_DB_HOSTNAME}:${PROD_DB_PORT}/${PROD_DB_NAME}
+  username: ${PROD_DB_USERNAME}
+  password: ${PROD_DB_PASSWORD}
+
+ jpa:
+  hibernate:
+   ddl-auto: create
+
+logging:
+ level:
+  org.hibernate.SQL: DEBUG
+  org.hibernate.type: TRACE
+```
+
 > Recuerda refrescar el proyecto de Gradle después creación y modificación.
 
 ### Gradle
@@ -165,7 +194,7 @@ Inmediamente, comenzar a crear datos de las entidades por medio de postman.
 2. Dentro de `/static` que se encuentra en el directorio `src/main/resources` del proyecto:
    2.1 Copiamos el frontend del proyecto.
    > _No olvides refrescar el proyecto_
-3. En `application.properties` cambiar `create` por `validate`
+3. En `application.properties` o `application.yml` cambiar `ddl-auto` en `create` por `validate`
    3.1 y repetir el paso 4 de Eclipse en el `build`:
 
 ```properties
